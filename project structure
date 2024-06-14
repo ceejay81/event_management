@@ -1,0 +1,52 @@
+event_management/
+├── admin/
+│   ├── dashboard.php         # Admin dashboard for managing events
+│   ├── create_event.php      # Admin page to create new events
+│   ├── edit_event.php        # Admin page to edit existing events
+│   ├── view_attendance.php   # Admin page to view attendance
+│   ├── profile.php           # Admin profile management
+│   └── includes/
+│       ├── header.php
+│       └── footer.php
+├── adminlte/
+│   ├── css         
+│   ├── js      
+│   ├── plugins
+├── student/
+│   ├── dashboard.php         # Student dashboard displaying enrolled events
+│   ├── view_enrolled_events.php  # Student page to view enrolled events
+│   ├── view_attendance.php   # Student page to view attendance
+│   ├── profile.php           # Student profile management
+│   └── includes/
+│       ├── header.php
+│       └── footer.php
+│
+├── auth/
+│   ├── login.php             # Login page
+│   ├── register.php          # Registration page
+│   └── logout.php            # Logout functionality
+│
+├── enroll/
+│   └── enroll_student.php    # Page to enroll students in events
+│
+├── includes/
+│   ├── config.php            # Configuration file
+│   ├── db.php                # Database connection script
+│   ├── functions.php         # Utility functions
+│   ├── header.php            # Common header file
+│   └── footer.php            # Common footer file
+│
+├── css/
+│   └── styles.css            # Stylesheet
+│
+├── js/
+│   └── scripts.js            # JavaScript scripts
+│
+├── images/                   # Image assets
+│
+└── qr_codes/
+    ├── generate_qr.php       # Generate QR codes for events
+    ├── show_qr.php           # Show QR codes
+    └── includes/
+        ├── header.php
+        └── footer.php

@@ -1,0 +1,106 @@
+1. Database Structure
+Database Name: event_management
+Tables:
+users
+
+user_id (INT, AUTO_INCREMENT, PRIMARY KEY)
+full_name (VARCHAR(255), NOT NULL)
+email (VARCHAR(255), UNIQUE, NOT NULL)
+password_hash (VARCHAR(255), NOT NULL)
+role (ENUM('teacher', 'student'), NOT NULL)
+events
+
+event_id (INT, AUTO_INCREMENT, PRIMARY KEY)
+teacher_id (INT, NOT NULL, FOREIGN KEY references users(user_id))
+event_name (VARCHAR(255), NOT NULL)
+event_date (DATETIME, NOT NULL)
+event_location (VARCHAR(255), NOT NULL)
+attendance
+
+attendance_id (INT, AUTO_INCREMENT, PRIMARY KEY)
+student_id (INT, NOT NULL, FOREIGN KEY references users(user_id))
+event_id (INT, NOT NULL, FOREIGN KEY references events(event_id))
+attendance_time (DATETIME, NOT NULL)
+enrolled_students
+
+enrollment_id (INT, AUTO_INCREMENT, PRIMARY KEY)
+event_id (INT, NOT NULL, FOREIGN KEY references events(event_id))
+student_id (INT, NOT NULL, FOREIGN KEY references users(user_id))
+qr_codes
+
+qr_code_id (INT, AUTO_INCREMENT, PRIMARY KEY)
+event_id (INT, NOT NULL, FOREIGN KEY references events(event_id))
+qr_code (TEXT, NOT NULL)
+2. File Structure
+Admin Section (admin/):
+
+dashboard.php: Admin dashboard for managing events.
+create_event.php: Form to create new events.
+edit_event.php: Form to edit existing events.
+view_attendance.php: View attendance for events.
+profile.php: Admin profile management.
+includes/: Header and footer files for admin pages.
+Student Section (student/):
+
+dashboard.php: Student dashboard displaying enrolled events.
+view_enrolled_events.php: View events that a student is enrolled in.
+view_attendance.php: View attendance for events.
+profile.php: Student profile management.
+includes/: Header and footer files for student pages.
+Authentication (auth/):
+
+login.php: Login page for users.
+register.php: Registration page for new users.
+logout.php: Logout functionality.
+Enrollment (enroll/):
+
+enroll_student.php: Form to enroll students in events.
+Includes (includes/):
+
+config.php: Configuration file with database connection.
+db.php: Database connection script.
+functions.php: Utility functions for database operations and common tasks.
+header.php and footer.php: Common header and footer files included in other pages.
+CSS (css/), JavaScript (js/), Images (images/), QR Codes (qr_codes/):
+
+Directories for stylesheets, scripts, images, and QR codes used in the system.
+3. Functionality Implementation
+Authentication and Authorization:
+
+Implement login, registration, and logout functionalities.
+Restrict access to admin and student sections based on their roles (teacher or student).
+Admin Dashboard:
+
+Manage events (create, edit, delete).
+View attendance records.
+Profile management for admins.
+Student Dashboard:
+
+View enrolled events.
+View attendance records.
+Profile management for students.
+Event Management:
+
+CRUD operations for events (Create, Read, Update, Delete).
+Generate QR codes for events.
+Enroll students in events and manage enrollments.
+4. Testing and Deployment
+Testing:
+
+Test each functionality to ensure it works as expected.
+Handle edge cases like error handling, input validation, and security.
+Deployment:
+
+Deploy the system on a web server.
+Configure permissions and settings for production use.
+5. Maintenance and Iteration
+Maintenance:
+
+Monitor the system for bugs or performance issues.
+Apply updates and security patches as needed.
+Iteration:
+
+Gather feedback from users and stakeholders.
+Iteratively improve the system based on feedback and changing requirements.
+Summary
+This plan outlines the structure, database schema, and functionality of the event management system. It ensures clear separation of roles (teacher and student), robust database design, and systematic development steps to build and deploy a functional and secure system. Adjustments can be made based on specific project needs or additional features required in the future.
