@@ -1,4 +1,7 @@
 <?php
+// Start session
+session_start();
+
 // Include necessary files
 require_once '../includes/config.php';
 require_once '../includes/db.php';
@@ -27,7 +30,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Check input errors before querying the database
     if (empty($email_err) && empty($password_err)) {
         // Prepare a select statement
-        $sql = 'SELECT user_id, email, password_hash, role FROM users WHERE email = ?';
+        $sql = 'SELECT user_id, full_name, email, password_hash, role FROM users WHERE email = ?';
 
         if ($stmt = mysqli_prepare($link, $sql)) {
             // Bind variables to the prepared statement as parameters
@@ -42,7 +45,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 // Check if email exists
                 if (mysqli_stmt_num_rows($stmt) == 1) {
                     // Bind result variables
-                    mysqli_stmt_bind_result($stmt, $user_id, $email, $hashed_password, $role);
+                    mysqli_stmt_bind_result($stmt, $user_id, $full_name, $email, $hashed_password, $role);
                     if (mysqli_stmt_fetch($stmt)) {
                         // Verify password
                         if (password_verify($password, $hashed_password)) {
@@ -51,6 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
                             // Store data in session variables
                             $_SESSION['user_id'] = $user_id;
+                            $_SESSION['full_name'] = $full_name;
                             $_SESSION['email'] = $email;
                             $_SESSION['role'] = $role;
 
@@ -87,7 +91,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="UTF-8">
     <title>Login</title>
@@ -96,7 +99,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../adminlte/css/adminlte.min.css">
 </head>
-
 <body class="hold-transition login-page">
     <div class="login-box">
         <div class="login-logo">
@@ -151,5 +153,4 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <!-- AdminLTE App -->
     <script src="../adminlte/js/adminlte.min.js"></script>
 </body>
-
 </html>

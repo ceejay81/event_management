@@ -3,8 +3,7 @@ session_start();
 
 // Check if user is logged in as admin or teacher
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'teacher')) {
-    header('Location: ../auth/login.php');
-    exit;
+    redirectTo('../auth/login.php');
 }
 
 // Include necessary files
@@ -20,16 +19,19 @@ if ($stmt = mysqli_prepare($link, $sql)) {
     mysqli_stmt_bind_param($stmt, 's', $role);
     if (mysqli_stmt_execute($stmt)) {
         $result = mysqli_stmt_get_result($stmt);
-        while ($row = mysqli_fetch_assoc($result)) {
-            $students[] = $row;
+        if ($result) {
+            $students = mysqli_fetch_all($result, MYSQLI_ASSOC);
+        } else {
+            showError('Oops! Something went wrong fetching students. Please try again later.');
         }
     } else {
-        echo 'Oops! Something went wrong. Please try again later.';
+        showError('Oops! Something went wrong executing query. Please try again later.');
     }
     mysqli_stmt_close($stmt);
+} else {
+    showError('Oops! Something went wrong preparing statement. Please try again later.');
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>

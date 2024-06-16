@@ -43,21 +43,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error_message = "Please select an event.";
     } else {
         // Fetch event details
-        $sql = "SELECT event_name, event_date, event_location, teacher_id FROM events WHERE event_id = ?";
+        $sql = "SELECT event_name, event_date, event_location, event_start_time, teacher_id FROM events WHERE event_id = ?";
         if ($stmt = mysqli_prepare($link, $sql)) {
             mysqli_stmt_bind_param($stmt, "i", $event_id);
             mysqli_stmt_execute($stmt);
-            mysqli_stmt_bind_result($stmt, $event_name, $event_date, $event_location, $teacher_id);
+            mysqli_stmt_bind_result($stmt, $event_name, $event_date, $event_location, $event_start_time, $teacher_id);
             mysqli_stmt_fetch($stmt);
             mysqli_stmt_close($stmt);
 
             // Fetch teacher name
-            $teacher_id = '';
             $sql_teacher = "SELECT full_name FROM users WHERE user_id = ?";
             if ($stmt_teacher = mysqli_prepare($link, $sql_teacher)) {
                 mysqli_stmt_bind_param($stmt_teacher, "i", $teacher_id);
                 mysqli_stmt_execute($stmt_teacher);
-                mysqli_stmt_bind_result($stmt_teacher, $teacher_id);
+                mysqli_stmt_bind_result($stmt_teacher, $teacher_name);
                 mysqli_stmt_fetch($stmt_teacher);
                 mysqli_stmt_close($stmt_teacher);
             } else {
@@ -65,9 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             }
 
             // Generate QR code content
-            $qr_content = "Teacher: " . $teacher_id . "\n";
+            $qr_content = "Teacher: " . $teacher_name . "\n";
             $qr_content .= "Event Name: " . $event_name . "\n";
             $qr_content .= "Event Date: " . $event_date . "\n";
+            $qr_content .= "Event time: " . $event_start_time . "\n";
             $qr_content .= "Location: " . $event_location;
 
             // Generate QR code
@@ -82,34 +82,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             // Adjust the path where the QR code image will be saved
             $qrCodeFile = '../images/event_' . $event_id . '.png';
 
-            if ($qrCode->render($qr_content, $qrCodeFile)) {
-                // Save QR code details to the database
-                $sql_save = "INSERT INTO qr_codes (event_id, qr_code, qr_content) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE qr_code = ?, qr_content = ?";
-                if ($stmt_save = mysqli_prepare($link, $sql_save)) {
-                    mysqli_stmt_bind_param($stmt_save, "issss", $event_id, $qrCodeFile, $qr_content, $qrCodeFile, $qr_content);
-                    if (mysqli_stmt_execute($stmt_save)) {
-                        $success_message = "QR code generated successfully!";
-                    } else {
-                        $error_message = "Failed to save QR code details: " . mysqli_error($link);
-                    }
-                    mysqli_stmt_close($stmt_save);
+            $qrCode->render($qr_content, $qrCodeFile);
+
+            // Save QR code details to the database
+            $sql_save = "INSERT INTO qr_codes (event_id, qr_code, qr_content) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE qr_code = ?, qr_content = ?";
+            if ($stmt_save = mysqli_prepare($link, $sql_save)) {
+                mysqli_stmt_bind_param($stmt_save, "issss", $event_id, $qrCodeFile, $qr_content, $qrCodeFile, $qr_content);
+                if (mysqli_stmt_execute($stmt_save)) {
+                    $success_message = "QR code generated successfully!";
                 } else {
-                    $error_message = "Error preparing save statement: " . mysqli_error($link);
+                    $error_message = "Failed to save QR code details: " . mysqli_error($link);
                 }
+                mysqli_stmt_close($stmt_save);
             } else {
-                $error_message = "Failed to generate QR code.";
-                echo "<script>
-                        $(document).ready(function() {
-                            Swal.fire({
-                                icon: 'error',
-                                title: 'QR Code Generation Failed',
-                                text: '<?php echo addslashes($error_message); ?>',
-                                confirmButtonText: 'OK'
-                            });
-                        });
-                    </script>";
+                $error_message = "Error preparing save statement: " . mysqli_error($link);
             }
-            
         } else {
             die("Error preparing query: " . mysqli_error($link));
         }
@@ -131,6 +118,8 @@ mysqli_close($link);
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/css/adminlte.min.css">
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
 <div class="wrapper">
@@ -182,11 +171,6 @@ mysqli_close($link);
                             </div>
                         </form>
                     </div>
-                    <div class="col-md-6">
-    <!-- Display QR Code -->
-                    
-                    </div>
-
                 </div>
             </div>
         </section>
@@ -196,7 +180,18 @@ mysqli_close($link);
 
     <!-- Footer -->
     <?php require_once 'includes/footer.php'; ?>
-    <?php if (!empty($qrCodeFile)): ?>
+</div>
+<!-- ./wrapper -->
+
+<!-- Include jQuery -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+<!-- Bootstrap JS -->
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
+<!-- AdminLTE JS -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
+<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<?php if (!empty($qrCodeFile)): ?>
     <script>
         $(document).ready(function() {
             Swal.fire({
@@ -209,15 +204,5 @@ mysqli_close($link);
         });
     </script>
 <?php endif; ?>
-</div>
-<!-- ./wrapper -->
-
-<!-- Include jQuery -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
-<!-- Bootstrap JS -->
-<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.bundle.min.js"></script>
-<!-- AdminLTE JS -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/js/adminlte.min.js"></script>
-<script src="//cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </body>
 </html>

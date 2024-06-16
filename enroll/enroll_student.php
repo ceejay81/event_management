@@ -3,8 +3,7 @@ session_start();
 
 // Check if user is logged in as admin or teacher
 if (!isset($_SESSION['user_id']) || ($_SESSION['role'] !== 'admin' && $_SESSION['role'] !== 'teacher')) {
-    header('Location: ../auth/login.php');
-    exit;
+    redirectTo('../auth/login.php');
 }
 
 // Include necessary files
@@ -24,14 +23,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (empty(trim($_POST['full_name']))) {
             $full_name_err = 'Please enter student\'s full name.';
         } else {
-            $full_name = trim($_POST['full_name']);
+            $full_name = sanitizeInput($_POST['full_name']);
         }
 
         // Validate email
         if (empty(trim($_POST['email']))) {
             $email_err = 'Please enter student\'s email.';
         } else {
-            $email = trim($_POST['email']);
+            $email = sanitizeInput($_POST['email']);
             // Check if email already exists
             $sql = 'SELECT user_id FROM users WHERE email = ?';
             if ($stmt = mysqli_prepare($link, $sql)) {
@@ -43,7 +42,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         $email_err = 'This email is already taken.';
                     }
                 } else {
-                    echo 'Oops! Something went wrong. Please try again later.';
+                    showError('Oops! Something went wrong. Please try again later.');
                 }
                 mysqli_stmt_close($stmt);
             }
@@ -53,7 +52,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (empty(trim($_POST['password']))) {
             $password_err = 'Please enter a password.';
         } else {
-            $password = trim($_POST['password']);
+            $password = sanitizeInput($_POST['password']);
         }
 
         // Check input errors before inserting into database
@@ -64,26 +63,45 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             // Define the user role (adjust as needed)
             $role = 'student'; // Example role
 
+            // Generate a 6-digit random number for student ID
+            $student_id = generateRandomID();
+
+            // Check if student ID already exists
+            $sql = 'SELECT user_id FROM users WHERE user_id = ?';
+            if ($stmt = mysqli_prepare($link, $sql)) {
+                mysqli_stmt_bind_param($stmt, 'i', $param_id);
+                $param_id = $student_id;
+                if (mysqli_stmt_execute($stmt)) {
+                    mysqli_stmt_store_result($stmt);
+                    if (mysqli_stmt_num_rows($stmt) == 1) {
+                        // If student ID already exists, generate a new one
+                        $student_id = generateRandomID();
+                    }
+                } else {
+                    showError('Oops! Something went wrong. Please try again later.');
+                }
+                mysqli_stmt_close($stmt);
+            }
+
             // Insert into the database with prepared statement
-            $sql = 'INSERT INTO users (full_name, email, password_hash, role) VALUES (?, ?, ?, ?)';
+            $sql = 'INSERT INTO users (user_id, full_name, email, password_hash, role) VALUES (?, ?, ?, ?, ?)';
             if ($stmt = mysqli_prepare($link, $sql)) {
                 // Bind parameters to the statement
-                mysqli_stmt_bind_param($stmt, 'ssss', $full_name, $email, $password_hash, $role);
+                mysqli_stmt_bind_param($stmt, 'issss', $student_id, $full_name, $email, $password_hash, $role);
 
                 // Execute the statement
                 if (mysqli_stmt_execute($stmt)) {
-                    $student_id = mysqli_insert_id($link); // Get the newly inserted student ID
-                    $success_message = 'Student registered successfully!';
+                    $success_message = 'Student registered successfully with ID: ' . $student_id;
                     // Clear form fields after successful registration
                     $full_name = $email = '';
                 } else {
-                    $error_message = 'Failed to register student. Please try again.';
+                    showError('Failed to register student. Please try again.');
                 }
 
                 // Close the prepared statement
                 mysqli_stmt_close($stmt);
             } else {
-                $error_message = 'Database error. Please try again later.';
+                showError('Database error. Please try again later.');
             }
         }
     } else {
@@ -91,14 +109,14 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         if (empty(trim($_POST['student_id']))) {
             $student_id_err = 'Please enter student ID.';
         } else {
-            $student_id = trim($_POST['student_id']);
+            $student_id = sanitizeInput($_POST['student_id']);
         }
 
         // Validate event ID
         if (empty(trim($_POST['event_id']))) {
             $event_id_err = 'Please select an event.';
         } else {
-            $event_id = trim($_POST['event_id']);
+            $event_id = sanitizeInput($_POST['event_id']);
         }
 
         // Check input errors before enrolling student in event
@@ -118,7 +136,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                         // Clear form fields after successful enrollment
                         $student_id = $event_id = '';
                     } else {
-                        $error_message = 'Failed to enroll student. Please try again.';
+                        showError('Failed to enroll student. Please try again.');
                     }
                 }
             }
@@ -129,7 +147,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 // Fetch events for dropdown
 $events = getAllEvents(); // Assuming getAllEvents() retrieves a list of events
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>

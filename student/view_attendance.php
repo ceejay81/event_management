@@ -12,7 +12,7 @@ require_once '../includes/config.php';
 require_once '../includes/db.php';
 require_once '../includes/functions.php';
 
-// Fetch student details from database (assuming function getUserById() exists)
+// Fetch student details from database
 $student_id = $_SESSION['user_id'];
 $student_data = getUserById($student_id);
 
@@ -26,6 +26,8 @@ $stmt = mysqli_prepare($link, $sql);
 mysqli_stmt_bind_param($stmt, "i", $student_id);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
+
+// Process $result further as needed
 ?>
 
 <!DOCTYPE html>

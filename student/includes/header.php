@@ -72,15 +72,21 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="../qr_codes/manual_attendance.php" class="nav-link">
+                        <a href="manual_attendance.php" class="nav-link">
                             <i class="nav-icon fas fa-clipboard-list"></i>
                             <p>Manual Attendance</p>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="../qr_codes/show_qr.php" class="nav-link">
+                        <a href="show_qr.php" class="nav-link">
                             <i class="nav-icon fas fa-clipboard-list"></i>
                             <p>QR Attendance</p>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="scan_qr.php" class="nav-link">
+                            <i class="nav-icon fas fa-clipboard-list"></i>
+                            <p>Scan QR </p>
                         </a>
                     </li>
                     <!-- Profile -->

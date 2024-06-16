@@ -18,7 +18,9 @@ CREATE TABLE events (
     event_id INT AUTO_INCREMENT PRIMARY KEY,
     teacher_id INT NOT NULL,
     event_name VARCHAR(255) NOT NULL,
+    -- Add event_start_time to Events Table
     event_date DATE NOT NULL,
+    event_start_time TIME NOT NULL,
     event_location VARCHAR(255) NOT NULL,
     FOREIGN KEY (teacher_id) REFERENCES users(user_id)
 );
@@ -30,7 +32,7 @@ CREATE TABLE attendance (
     event_id INT NOT NULL,
     attendance_time DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (student_id) REFERENCES users(user_id),
-    FOREIGN KEY (event_id) REFERENCES events(event_id),
+    FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE,
     UNIQUE KEY unique_attendance (student_id, event_id)
 );
 
@@ -39,7 +41,7 @@ CREATE TABLE enrolled_students (
     enrollment_id INT AUTO_INCREMENT PRIMARY KEY,
     event_id INT NOT NULL,
     student_id INT NOT NULL,
-    FOREIGN KEY (event_id) REFERENCES events(event_id),
+    FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE,
     FOREIGN KEY (student_id) REFERENCES users(user_id),
     UNIQUE KEY unique_enrollment (event_id, student_id)
 );
@@ -50,6 +52,10 @@ CREATE TABLE qr_codes (
     event_id INT NOT NULL,
     qr_code TEXT NOT NULL,
     qr_content TEXT NOT NULL, -- New column for QR code content
-    FOREIGN KEY (event_id) REFERENCES events(event_id),
+    FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE,
     UNIQUE KEY unique_qr_code (event_id)
 );
+
+ALTER TABLE events
+ADD COLUMN event_start_time TIME NOT NULL;
+

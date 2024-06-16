@@ -1,8 +1,7 @@
 <?php
-// Start session
 session_start();
 
-// Check if the user is logged in as student
+// Check if user is logged in as student
 if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'student') {
     header('Location: ../auth/login.php');
     exit;
@@ -22,6 +21,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Validate teacher ID
     if (empty(trim($_POST['teacher_id']))) {
         $teacher_id_err = 'Please enter the teacher ID.';
+    } elseif (!is_numeric($_POST['teacher_id'])) {
+        $teacher_id_err = 'Teacher ID must be a number.';
     } else {
         $teacher_id = trim($_POST['teacher_id']);
     }
@@ -29,6 +30,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     // Validate event ID
     if (empty(trim($_POST['event_id']))) {
         $event_id_err = 'Please enter the event ID.';
+    } elseif (!is_numeric($_POST['event_id'])) {
+        $event_id_err = 'Event ID must be a number.';
     } else {
         $event_id = trim($_POST['event_id']);
     }
@@ -57,6 +60,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
             // Close statement
             mysqli_stmt_close($stmt);
+        } else {
+            $submission_err = 'Database error: ' . mysqli_error($link);
         }
     }
 
@@ -64,7 +69,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     mysqli_close($link);
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -73,6 +77,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <link rel="stylesheet" href="../css/styles.css">
 </head>
 <body>
+<?php require_once 'includes/header.php'; ?>
+
     <div class="wrapper">
         <h2>Manual Attendance</h2>
         <p>Please enter the teacher ID and event ID to mark your attendance.</p>
@@ -93,6 +99,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <a href="dashboard.php" class="btn btn-default">Cancel</a>
             </div>
         </form>
+        <?php require_once 'includes/footer.php'; ?>
+
     </div>
 </body>
 </html>

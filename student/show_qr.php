@@ -45,40 +45,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {
             }
 
             // Generate QR code content
-            $qr_content = "Teacher: " . $teacher_name . "\n"; // Use $teacher_name instead of $teacher_id
-            $qr_content .= "Event Name: " . $event_name . "\n";
-            $qr_content .= "Event Date: " . $event_date . "\n";
-            $qr_content .= "Event time: " . $event_start_time . "\n";
-            $qr_content .= "Location: " . $event_location;
+            $qr_content = "Teacher: " . htmlspecialchars($teacher_name) . "\n";
+            $qr_content .= "Event Name: " . htmlspecialchars($event_name) . "\n";
+            $qr_content .= "Event Date: " . htmlspecialchars($event_date) . "\n";
+            $qr_content .= "Event Time: " . htmlspecialchars($event_start_time) . "\n";
+            $qr_content .= "Location: " . htmlspecialchars($event_location);
 
             // Generate QR code for the event details
             $options = new QROptions([
                 'outputType' => QRCode::OUTPUT_IMAGE_PNG,
                 'eccLevel'   => QRCode::ECC_L,
-                'imageBase64' => false, // Set to true if you need base64 images instead of files
+                'imageBase64' => true, // Set to true for base64 image
             ]);
             $qrCode = new QRCode($options);
-            $qrCode->render($qr_content, '../images/event_' . $event_id . '.png');
+            $qr_image_base64 = $qrCode->render($qr_content);
 
             // Construct HTML for QR code and download link
-            $qr_image_path = '../images/event_' . $event_id . '.png';
             $qr_code_html = '<div class="qr-code-container">';
-            $qr_code_html .= '<img src="' . htmlspecialchars($qr_image_path) . '" alt="QR Code" class="img-fluid">';
-            $qr_code_html .= '<a href="' . htmlspecialchars($qr_image_path) . '" download="qrcode_' . $event_id . '.png">Download QR Code</a>';
+            $qr_code_html .= '<img src="' . htmlspecialchars($qr_image_base64) . '" alt="QR Code" class="img-fluid">';
+            $qr_code_html .= '<a href="' . htmlspecialchars($qr_image_base64) . '" download="qrcode_' . $event_id . '.png">Download QR Code</a>';
             $qr_code_html .= '</div>';
 
             // Prepare response as JSON
-            $response = array(
+            $response = [
                 'success' => true,
                 'qr_code_html' => $qr_code_html,
                 'event_name' => htmlspecialchars($event_name),
-            );
+            ];
             echo json_encode($response);
             exit; // Stop further execution after displaying QR code
         } else {
-            echo json_encode(array('success' => false, 'error' => 'Event not found.'));
+            echo json_encode(['success' => false, 'error' => 'Event not found.']);
             exit;
         }
+    } else {
+        echo json_encode(['success' => false, 'error' => 'Database error.']);
+        exit;
     }
 }
 ?>
@@ -98,13 +100,18 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {
     <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
 
+    <!-- SweetAlert2 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+
     <!-- jQuery -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <!-- SweetAlert2 JS -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     
     <style>
         .qr-code-container {
             text-align: center;
-            margin-top: 10px; /* Adjust spacing between QR code and download link */
+            margin-top: 10px;
         }
 
         .qr-code-container img {
@@ -114,7 +121,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {
 
         .qr-code-container a {
             display: block;
-            margin-top: 5px; /* Adjust spacing between QR code and download link */
+            margin-top: 5px;
         }
     </style>
 </head>
@@ -124,27 +131,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {
 
         <!-- Content Wrapper. Contains page content -->
         <div class="content-wrapper">
-
             <!-- Content Header (Page header) -->
             <div class="content-header">
                 <div class="container-fluid">
                     <div class="row mb-2">
                         <div class="col-sm-6">
                             <h1 class="m-0 text-dark">Show QR Code</h1>
-                        </div><!-- /.col -->
+                        </div>
                         <div class="col-sm-6">
                             <nav aria-label="breadcrumb">
                                 <ol class="breadcrumb float-sm-right">
                                     <li class="breadcrumb-item"><a href="../admin/dashboard.php">Dashboard</a></li>
                                     <li class="breadcrumb-item"><a href="../admin/view_event.php">Events</a></li>
-                                    <li class="breadcrumb-item"><a href="../qr_codes/show_qr.php">Show QR</a></li>
-                                    <li class="breadcrumb-item"><a href="../admin/view_attendance.php">View Attendance</a></li>
                                     <li class="breadcrumb-item active" aria-current="page">Show QR</li>
                                 </ol>
                             </nav>
-                        </div><!-- /.col -->
-                    </div><!-- /.row -->
-                </div><!-- /.container-fluid -->
+                        </div>
+                    </div>
+                </div>
             </div>
             <!-- /.content-header -->
 
@@ -173,18 +177,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h3 class="card-title">QR Code</h3>
-                                </div>
-                                <div class="card-body text-center" id="qrCodeDisplay">
-                                    <!-- QR code will be displayed here dynamically -->
-                                </div>
                             </div>
                         </div>
                     </div>
-                </div><!-- /.container-fluid -->
+                </div>
             </section>
             <!-- /.content -->
         </div>
@@ -192,6 +188,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {
         <?php require_once 'includes/footer.php'; ?>
     </div>
     <!-- ./wrapper -->
+
     <script>
     $(document).ready(function() {
         // Form submission for generating QR code
@@ -206,17 +203,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {
                 dataType: 'json',
                 success: function(response) {
                     if (response.success) {
-                        // Append QR code and download link
-                        var qrCodeHtml = response.qr_code_html;
-                        $('#qrCodeDisplay').html(qrCodeHtml);
+                        // Display QR code and download link using SweetAlert2
+                        Swal.fire({
+                            title: 'QR Code for ' + response.event_name,
+                            html: response.qr_code_html,
+                            showCloseButton: true,
+                            focusConfirm: false,
+                        });
                     } else {
-                        alert('Error: ' + response.error);
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: response.error,
+                        });
                     }
                 },
                 error: function() {
-                    alert('Error: Failed to generate QR code.');
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Failed to generate QR code.',
+                    });
                 }
             });
         });
     });
-</script>
+    </script>
+</body>
+</html>

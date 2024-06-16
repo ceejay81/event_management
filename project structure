@@ -17,6 +17,10 @@ event_management/
 │   ├── view_enrolled_events.php  # Student page to view enrolled events
 │   ├── view_attendance.php   # Student page to view attendance
 │   ├── profile.php           # Student profile management
+        scan_qr.php
+        verify_attendance.php
+        manual_attendance.php
+        show_qr.php
 │   └── includes/
 │       ├── header.php
 │       └── footer.php

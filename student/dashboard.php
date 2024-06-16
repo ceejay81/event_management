@@ -56,7 +56,7 @@ $enrolled_events = getEnrolledEventsByStudentId($user_id);
             </div><!-- /.container-fluid -->
         </div>
         <!-- /.content-header -->
-
+        
         <!-- Main content -->
         <section class="content">
             <div class="container-fluid">
@@ -88,11 +88,11 @@ $enrolled_events = getEnrolledEventsByStudentId($user_id);
             </div><!-- /.container-fluid -->
         </section>
         <!-- /.content -->
+        <?php require_once 'includes/footer.php'; ?>
     </div>
     <!-- /.content-wrapper -->
 
     <!-- Main Footer -->
-    <?php require_once 'includes/footer.php'; ?>
 </div>
 <!-- ./wrapper -->
 

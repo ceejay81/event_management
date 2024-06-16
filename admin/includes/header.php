@@ -83,23 +83,11 @@
                             <i class="nav-icon fas fa-calendar-plus"></i>
                             <p>Create Event</p>
                         </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="../admin/edit_event.php" class="nav-link">
-                            <i class="nav-icon fas fa-calendar-edit"></i>
-                            <p>Edit Event</p>
-                        </a>
-                    </li>
+                    </li>           
                     <li class="nav-item">
                         <a href="../qr_codes/show_qr.php" class="nav-link">
                             <i class="nav-icon fas fa-qrcode"></i>
                             <p>Show QR</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="../admin/view_attendance.php" class="nav-link">
-                            <i class="nav-icon fas fa-clipboard-list"></i>
-                            <p>View Attendance</p>
                         </a>
                     </li>
                     <li class="nav-item">

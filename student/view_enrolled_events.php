@@ -12,20 +12,22 @@ require_once '../includes/config.php';
 require_once '../includes/db.php';
 require_once '../includes/functions.php';
 
-// Fetch student details from database (assuming function getUserById() exists)
+// Fetch student details from database
 $student_id = $_SESSION['user_id'];
 $student_data = getUserById($student_id);
 
 // Query to fetch enrolled events for the student
 $sql = "SELECT e.event_id, e.event_name, e.event_date, e.event_location
         FROM events e
-        INNER JOIN enrolled_students es ON e.teacher_id = es.teacher_id
+        INNER JOIN enrolled_students es ON e.event_id = es.event_id
         WHERE es.student_id = ?";
         
 $stmt = mysqli_prepare($link, $sql);
 mysqli_stmt_bind_param($stmt, "i", $student_id);
 mysqli_stmt_execute($stmt);
 $result = mysqli_stmt_get_result($stmt);
+
+// Process $result further as needed
 ?>
 
 <!DOCTYPE html>

@@ -70,13 +70,17 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Check input errors before inserting into database
     if (empty($full_name_err) && empty($email_err) && empty($password_err) && empty($confirm_password_err) && empty($role_err)) {
+        // Generate a random 6-digit user_id
+        $user_id = generateRandomID();
+
         // Prepare an insert statement
-        $sql = 'INSERT INTO users (full_name, email, password_hash, role) VALUES (?, ?, ?, ?)';
+        $sql = 'INSERT INTO users (user_id, full_name, email, password_hash, role) VALUES (?, ?, ?, ?, ?)';
         if ($stmt = mysqli_prepare($link, $sql)) {
             // Bind variables to the prepared statement as parameters
-            mysqli_stmt_bind_param($stmt, 'ssss', $param_full_name, $param_email, $param_password, $param_role);
+            mysqli_stmt_bind_param($stmt, 'issss', $param_user_id, $param_full_name, $param_email, $param_password, $param_role);
 
             // Set parameters
+            $param_user_id = $user_id;
             $param_full_name = $full_name;
             $param_email = $email;
             $param_password = password_hash($password, PASSWORD_DEFAULT); // Creates a password hash
@@ -100,7 +104,6 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     mysqli_close($link);
 }
 ?>
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -115,7 +118,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <!-- Custom CSS -->
     <link rel="stylesheet" href="../css/styles.css">
 </head>
-<body class="hold-transition register-page">
+<body class="hold-transition register-page background-image">
 <div class="register-box">
     <div class="card">
         <div class="card-body register-card-body">
