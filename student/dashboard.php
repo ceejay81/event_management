@@ -75,6 +75,7 @@ $enrolled_events = getEnrolledEventsByStudentId($user_id);
                                         <p>Date: <?php echo htmlspecialchars($event['event_date']); ?></p>
                                         <p>Location: <?php echo htmlspecialchars($event['event_location']); ?></p>
                                         <a href="view_attendance.php?event_id=<?php echo $event['event_id']; ?>" class="btn btn-primary">View Attendance</a>
+                                        <a href="show_qr.php?event_id=<?php echo $event['event_id']; ?>" class="btn btn-success">Generate QR Code</a>
                                     </li>
                                 <?php endforeach; ?>
                             <?php else : ?>

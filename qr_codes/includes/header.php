@@ -85,7 +85,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="../qr_codes/show_qr.php" class="nav-link">
+                        <a href="../qr_codes/generate_qr.php" class="nav-link">
                             <i class="nav-icon fas fa-qrcode"></i>
                             <p>Show QR</p>
                         </a>

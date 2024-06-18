@@ -27,23 +27,15 @@
         </ul>
 
         <!-- Right navbar links -->
+        <!-- Right navbar links -->
         <ul class="navbar-nav ml-auto">
-            <!-- Admin Profile Dropdown Menu -->
-            <li class="nav-item dropdown">
-                <a class="nav-link" data-toggle="dropdown" href="../auth/logout.php">
-                    <i class="fas fa-user"></i> Logout
+            <li class="nav-item">
+                <a class="nav-link" href="../auth/logout.php">
+                    <i class="fas fa-sign-out-alt"></i> Logout
                 </a>
-                <div class="dropdown-menu dropdown-menu-lg dropdown-menu-right">
-                    <a href="#" class="dropdown-item">
-                        <i class="fas fa-user mr-2"></i> Profile
-                    </a>
-                    <div class="dropdown-divider"></div>
-                    <a href="../auth/logout.php" class="dropdown-item">
-                        <i class="fas fa-sign-out-alt mr-2"></i> Logout
-                    </a>
-                </div>
             </li>
         </ul>
+
     </nav>
     <!-- /.navbar -->
 
@@ -85,7 +77,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a href="../qr_codes/show_qr.php" class="nav-link">
+                        <a href="../qr_codes/generate_qr.php" class="nav-link">
                             <i class="nav-icon fas fa-qrcode"></i>
                             <p>Show QR</p>
                         </a>

@@ -15,8 +15,9 @@ require_once '../vendor/autoload.php'; // Include QR code library
 
 use chillerlan\QRCode\{QRCode, QROptions};
 
-// Fetch all events
-$events = getAllEvents();
+// Fetch events that the student is enrolled in
+$user_id = $_SESSION['user_id'];
+$enrolled_events = getEnrolledEventsByStudentId($user_id);
 
 // Handle form submission
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {
@@ -84,6 +85,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {
     }
 }
 ?>
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -167,7 +169,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {
                                         <div class="form-group">
                                             <label for="eventSelect">Choose an event:</label>
                                             <select class="form-control" id="eventSelect" name="event_id">
-                                                <?php foreach ($events as $event): ?>
+                                                <?php foreach ($enrolled_events as $event): ?>
                                                     <option value="<?php echo htmlspecialchars($event['event_id']); ?>"><?php echo htmlspecialchars($event['event_name']); ?></option>
                                                 <?php endforeach; ?>
                                             </select>
@@ -175,8 +177,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {
                                         <button type="submit" class="btn btn-primary">Generate QR Code</button>
                                     </form>
                                 </div>
-                            </div>
-                        </div>
                             </div>
                         </div>
                     </div>
@@ -190,44 +190,42 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['event_id'])) {
     <!-- ./wrapper -->
 
     <script>
-    $(document).ready(function() {
-        // Form submission for generating QR code
-        $('#eventForm').submit(function(e) {
-            e.preventDefault();
-            var event_id = $('#eventSelect').val();
+        $(document).ready(function() {
+    // Form submission for generating QR code
+    $('#eventForm').submit(function(e) {
+        e.preventDefault();
+        var event_id = $('#eventSelect').val();
 
-            $.ajax({
-                type: 'POST',
-                url: '<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>',
-                data: { event_id: event_id },
-                dataType: 'json',
-                success: function(response) {
-                    if (response.success) {
-                        // Display QR code and download link using SweetAlert2
-                        Swal.fire({
-                            title: 'QR Code for ' + response.event_name,
-                            html: response.qr_code_html,
-                            showCloseButton: true,
-                            focusConfirm: false,
-                        });
-                    } else {
-                        Swal.fire({
-                            icon: 'error',
-                            title: 'Error',
-                            text: response.error,
-                        });
-                    }
-                },
-                error: function() {
+        $.ajax({
+            type: 'POST',
+            url: '<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>',
+            data: { event_id: event_id },
+            dataType: 'json',
+            success: function(response) {
+                if (response.success) {
+                    // Display QR code and download link using SweetAlert2
+                    Swal.fire({
+                        title: 'QR Code for ' + response.event_name,
+                        html: response.qr_code_html,
+                        showCloseButton: true,
+                        focusConfirm: false,
+                    });
+                } else {
                     Swal.fire({
                         icon: 'error',
                         title: 'Error',
-                        text: 'Failed to generate QR code.',
+                        text: response.error,
                     });
                 }
-            });
+            },
+            error: function() {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Failed to generate QR code.',
+                });
+            }
         });
     });
-    </script>
-</body>
-</html>
+});
+</script>

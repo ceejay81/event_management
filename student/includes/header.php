@@ -57,24 +57,11 @@
                             <p>Dashboard</p>
                         </a>
                     </li>
-                    <!-- Enrolled Events -->
-                    <li class="nav-item">
-                        <a href="view_enrolled_events.php" class="nav-link">
-                            <i class="nav-icon fas fa-calendar-check"></i>
-                            <p>Enrolled Events</p>
-                        </a>
-                    </li>
                     <!-- View Attendance -->
                     <li class="nav-item">
                         <a href="view_attendance.php" class="nav-link">
                             <i class="nav-icon fas fa-clipboard-list"></i>
                             <p>View Attendance</p>
-                        </a>
-                    </li>
-                    <li class="nav-item">
-                        <a href="manual_attendance.php" class="nav-link">
-                            <i class="nav-icon fas fa-clipboard-list"></i>
-                            <p>Manual Attendance</p>
                         </a>
                     </li>
                     <li class="nav-item">

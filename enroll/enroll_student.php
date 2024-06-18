@@ -154,10 +154,9 @@ $events = getAllEvents(); // Assuming getAllEvents() retrieves a list of events
     <title>Enroll Student</title>
     <link rel="stylesheet" href="../adminlte/css/adminlte.min.css">
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
-    <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/admin-lte/3.1.0/css/adminlte.min.css">
-    <!-- Font Awesome Icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
 </head>
 <body class="hold-transition sidebar-mini layout-fixed">
 <div class="wrapper">
@@ -189,8 +188,9 @@ $events = getAllEvents(); // Assuming getAllEvents() retrieves a list of events
                             <form role="form" method="post" action="<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>">
                                 <div class="card-body">
                                     <div class="form-group">
-                                        <label for="student_id"><i class="fas fa-id-card"></i> Student ID:</label>
-                                        <input type="text" class="form-control" id="student_id" name="student_id" placeholder="Enter Student ID" value="<?php echo $student_id; ?>">                                        <span class="text-danger"><?php echo $student_id_err; ?></span>
+                                        <label for="student_id"><i class="fas fa-id-card"></i> Student ID or Name:</label>
+                                        <input type="text" class="form-control" id="student_id" name="student_id" placeholder="Enter Student ID or Name" value="<?php echo $student_id; ?>">
+                                        <span class="text-danger"><?php echo $student_id_err; ?></span>
                                     </div>
                                     <div class="form-group">
                                         <label for="event_id"><i class="fas fa-calendar-alt"></i> Select Event:</label>
@@ -253,7 +253,6 @@ $events = getAllEvents(); // Assuming getAllEvents() retrieves a list of events
     </div>
 </div>
 
-
     <!-- Footer -->
     <?php require_once '../admin/includes/footer.php'; ?>
 </div>
@@ -265,5 +264,72 @@ $events = getAllEvents(); // Assuming getAllEvents() retrieves a list of events
 <script src="../adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <!-- AdminLTE App -->
 <script src="../adminlte/js/adminlte.min.js"></script>
+<!-- SweetAlert2 -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<!-- Your custom script to handle search and form submission -->
+<script>
+$(document).ready(function() {
+    $('#student_id').on('input', function() {
+        var searchTerm = $(this).val();
+
+        // Check if the search term is numeric (assumed for Student ID)
+        if (!$.isNumeric(searchTerm)) {
+            // Start searching after 3 characters for name
+            if (searchTerm.length > 2) {
+                $.ajax({
+                    url: 'search_student.php',
+                    type: 'POST',
+                    data: { search_term: searchTerm },
+                    success: function(data) {
+                        var response = JSON.parse(data);
+                        if (response.error) {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: response.message
+                            });
+                        } else {
+                            var studentList = '<ul>';
+                            response.forEach(function(student) {
+                                studentList += '<li>' + student.full_name + ' (ID: ' + student.user_id + ')</li>';
+                            });
+                            studentList += '</ul>';
+                            Swal.fire({
+                                title: 'Search Results',
+                                html: studentList
+                            });
+                        }
+                    },
+                    error: function() {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Oops...',
+                            text: 'Something went wrong with the search!'
+                        });
+                    }
+                });
+            }
+        }
+    });
+
+    <?php if (!empty($success_message)): ?>
+    Swal.fire({
+        icon: 'success',
+        title: 'Success',
+        text: '<?php echo $success_message; ?>'
+    });
+    <?php endif; ?>
+
+    <?php if (!empty($full_name_err) || !empty($email_err) || !empty($password_err) || !empty($student_id_err) || !empty($event_id_err)): ?>
+    Swal.fire({
+        icon: 'error',
+        title: 'Error',
+        text: '<?php echo $full_name_err . ' ' . $email_err . ' ' . $password_err . ' ' . $student_id_err . ' ' . $event_id_err; ?>'
+    });
+    <?php endif; ?>
+});
+</script>
+
 </body>
 </html>

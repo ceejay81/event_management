@@ -55,7 +55,3 @@ CREATE TABLE qr_codes (
     FOREIGN KEY (event_id) REFERENCES events(event_id) ON DELETE CASCADE,
     UNIQUE KEY unique_qr_code (event_id)
 );
-
-ALTER TABLE events
-ADD COLUMN event_start_time TIME NOT NULL;
-

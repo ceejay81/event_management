@@ -12,33 +12,43 @@ require_once '../includes/config.php';
 require_once '../includes/db.php';
 require_once '../includes/functions.php';
 
-// Fetch student details from database
+// Fetch student details from session
 $student_id = $_SESSION['user_id'];
-$student_data = getUserById($student_id);
 
-// Query to fetch attendance records for the student
-$sql = "SELECT e.event_name, e.event_date, a.attendance_time
-        FROM events e
-        INNER JOIN attendance a ON e.event_id = a.event_id
-        WHERE a.student_id = ?";
-        
-$stmt = mysqli_prepare($link, $sql);
-mysqli_stmt_bind_param($stmt, "i", $student_id);
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
-
-// Process $result further as needed
+// Fetch events for the logged-in student
+$events_result = getStudentEvents($link, $student_id);
 ?>
 
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>View Attendance</title>
     <!-- AdminLTE CSS -->
     <link rel="stylesheet" href="../adminlte/css/adminlte.min.css">
     <!-- Custom Styles -->
+    <style>
+        .badge {
+            padding: 5px 8px;
+            font-size: 12px;
+        }
+        .badge-success {
+            background-color: #28a745;
+        }
+        .badge-danger {
+            background-color: #dc3545;
+        }
+        .loading-spinner {
+            display: none;
+            text-align: center;
+            padding: 20px;
+        }
+        .spinner-border {
+            width: 3rem;
+            height: 3rem;
+        }
+    </style>
 </head>
 <body class="hold-transition sidebar-mini">
 <div class="wrapper">
@@ -57,28 +67,65 @@ $result = mysqli_stmt_get_result($stmt);
                             </div>
                             <!-- /.card-header -->
                             <div class="card-body">
-                                <?php if (mysqli_num_rows($result) > 0) : ?>
-                                    <table class="table table-bordered">
-                                        <thead>
-                                            <tr>
-                                                <th>Event Name</th>
-                                                <th>Date</th>
-                                                <th>Attendance Time</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <?php while ($row = mysqli_fetch_assoc($result)) : ?>
-                                                <tr>
-                                                    <td><?php echo htmlspecialchars($row['event_name']); ?></td>
-                                                    <td><?php echo date('M d, Y', strtotime($row['event_date'])); ?></td>
-                                                    <td><?php echo date('M d, Y H:i:s', strtotime($row['attendance_time'])); ?></td>
-                                                </tr>
-                                            <?php endwhile; ?>
-                                        </tbody>
-                                    </table>
-                                <?php else : ?>
-                                    <p>No attendance records found.</p>
-                                <?php endif; ?>
+                                <ul class="nav nav-tabs" id="eventTabs" role="tablist">
+                                    <?php
+                                    $first = true;
+                                    while ($event = mysqli_fetch_assoc($events_result)) {
+                                        $event_id = $event['event_id'];
+                                        $event_name = htmlspecialchars($event['event_name']);
+                                        $active_class = $first ? 'active' : '';
+                                        echo '<li class="nav-item">';
+                                        echo '<a class="nav-link ' . $active_class . '" id="tab' . $event_id . '" data-toggle="tab" href="#pane' . $event_id . '" role="tab" aria-controls="pane' . $event_id . '" aria-selected="true">' . $event_name . '</a>';
+                                        echo '</li>';
+                                        $first = false;
+                                    }
+                                    ?>
+                                </ul>
+                                <div class="tab-content" id="eventTabsContent">
+                                    <?php
+                                    mysqli_data_seek($events_result, 0); // Reset result pointer
+                                    $first = true;
+                                    while ($event = mysqli_fetch_assoc($events_result)) {
+                                        $event_id = $event['event_id'];
+                                        $active_class = $first ? 'show active' : '';
+                                        echo '<div class="tab-pane fade ' . $active_class . '" id="pane' . $event_id . '" role="tabpanel" aria-labelledby="tab' . $event_id . '">';
+                                        echo '<h4>' . htmlspecialchars($event['event_name']) . '</h4>';
+                                        echo '<div class="loading-spinner"><div class="spinner-border text-primary" role="status"><span class="sr-only">Loading...</span></div></div>';
+                                        echo '<div class="table-responsive" data-loaded="false">';
+                                        echo '<h5>Attendance Status</h5>';
+                                        echo '<table class="table table-bordered">';
+                                        echo '<thead><tr><th>Student Name</th><th>Status</th></tr></thead><tbody>';
+
+                                        // Fetch attendance data for this event
+                                        $attendance_result = getEventAttendance($link, $event_id);
+                                        $present_found = false;
+                                        $absent_found = false;
+
+                                        while ($row = mysqli_fetch_assoc($attendance_result)) {
+                                            echo '<tr>';
+                                            echo '<td>' . htmlspecialchars($row['student_name']) . '</td>';
+                                            if ($row['attendance_time']) {
+                                                $present_found = true;
+                                                echo '<td><span class="badge badge-success">Present</span></td>';
+                                            } else {
+                                                $absent_found = true;
+                                                echo '<td><span class="badge badge-danger">Absent</span></td>';
+                                            }
+                                            echo '</tr>';
+                                        }
+
+                                        if (!$present_found && !$absent_found) {
+                                            echo '<tr><td colspan="2">No attendance records found.</td></tr>';
+                                        }
+
+                                        echo '</tbody></table>';
+                                        echo '</div>'; // Close table-responsive div
+                                        echo '</div>'; // Close tab-pane div
+                                        $first = false;
+                                    }
+                                    ?>
+                                </div>
+                                <!-- /.tab-content -->
                             </div>
                             <!-- /.card-body -->
                         </div>
@@ -94,8 +141,6 @@ $result = mysqli_stmt_get_result($stmt);
     </div>
     <!-- /.content-wrapper -->
 
-    <?php require_once 'includes/footer.php'; ?>
-
 </div>
 <!-- ./wrapper -->
 
@@ -104,7 +149,26 @@ $result = mysqli_stmt_get_result($stmt);
 <script src="../adminlte/plugins/bootstrap/js/bootstrap.bundle.min.js"></script>
 <script src="../adminlte/js/adminlte.min.js"></script>
 <!-- Custom Script -->
-<script src="../js/scripts.js"></script>
+<script>
+$(document).ready(function() {
+    $('a[data-toggle="tab"]').on('shown.bs.tab', function(e) {
+        var target = $(e.target).attr("href");
+        var $tabContent = $(target);
+        var $spinner = $tabContent.find('.loading-spinner');
+        var $tableResponsive = $tabContent.find('.table-responsive');
+
+        if ($tableResponsive.data('loaded') !== 'true') {
+            $spinner.show();
+            // Simulate data loading process
+            setTimeout(function() {
+                $spinner.hide();
+                $tableResponsive.data('loaded', 'true');
+                // Add any additional data loading logic here
+            }, 1000); // Simulated delay for loading
+        }
+    });
+});
+</script>
 
 </body>
 </html>

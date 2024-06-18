@@ -448,4 +448,28 @@ function handleQRCodeScan($qr_content) {
     }
     return "Error: Could not prepare SQL query.";
 }
+function getStudentEvents($link, $student_id) {
+    $sql = "SELECT e.event_id, e.event_name, e.event_date, e.event_start_time, e.event_location
+            FROM events e
+            INNER JOIN enrolled_students es ON e.event_id = es.event_id
+            WHERE es.student_id = ?
+            ORDER BY e.event_date";
+    $stmt = mysqli_prepare($link, $sql);
+    mysqli_stmt_bind_param($stmt, "i", $student_id);
+    mysqli_stmt_execute($stmt);
+    return mysqli_stmt_get_result($stmt);
+}
+
+function getEventAttendance($link, $event_id) {
+    $sql = "SELECT u.full_name AS student_name, a.attendance_time
+            FROM enrolled_students es
+            LEFT JOIN attendance a ON es.event_id = a.event_id AND es.student_id = a.student_id
+            LEFT JOIN users u ON es.student_id = u.user_id
+            WHERE es.event_id = ?";
+    $stmt = mysqli_prepare($link, $sql);
+    mysqli_stmt_bind_param($stmt, "i", $event_id);
+    mysqli_stmt_execute($stmt);
+    return mysqli_stmt_get_result($stmt);
+}
+
 ?>

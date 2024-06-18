@@ -60,7 +60,7 @@ mysqli_close($link);
                         <ol class="breadcrumb float-sm-right">
                             <li class="breadcrumb-item"><a href="dashboard.php">Dashboard</a></li>
                             <li class="breadcrumb-item"><a href="view_event.php">Events</a></li>
-                            <li class="breadcrumb-item"><a href="../qr_codes/show_qr.php">Show QR</a></li>
+                            <li class="breadcrumb-item"><a href="../qr_codes/generate_qr.php">Show QR</a></li>
                             <li class="breadcrumb-item active" aria-current="page">Events</li>
                         </ol>
                         <div class="card">
